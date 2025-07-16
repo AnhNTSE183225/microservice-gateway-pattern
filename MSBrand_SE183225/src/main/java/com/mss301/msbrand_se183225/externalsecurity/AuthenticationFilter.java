@@ -37,7 +37,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     private final List<String> PUBLIC_PATHS = List.of(
             "/v3/api-docs/**",
             "/swagger-ui/**",
-            "/api/auth/**"
+            "/api/public/**"
     );
 
     @Builder

@@ -23,7 +23,6 @@ import java.util.List;
 public class User implements UserDetails, Principal {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "AccountID")
     Integer id;
 
