@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: MSAccount_SE183225
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=MSS301Summer25DBAccount;encrypt=true;trustServerCertificate=true
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    username: sa
+    password: yourStrong!Password
+  jpa:
+    hibernate:
+      ddl-auto: update
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+server:
+  port: 8081
+  servlet:
+    context-path: /account-service
+
+application:
+  security:
+    jwt:
+      expiration: 8640000
+      secret-key: fca579b54ebada72e31490a43cac0fa5b624655c8170519b861eb3f7221f4e57

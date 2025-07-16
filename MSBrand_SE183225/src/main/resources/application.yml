@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: MSBrand_SE183225 # CHANGE
+  datasource:
+    # CHANGE
+    url: jdbc:sqlserver://localhost:1433;databaseName=MSS301Summer25DBBrand;encrypt=true;trustServerCertificate=true
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    username: sa
+    password: yourStrong!Password
+  jpa:
+    hibernate:
+      ddl-auto: update
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+# CHANGE
+server:
+  port: 8083
+  servlet:
+    context-path: /brand-service
+
+# CHANGE
+external:
+  authentication:
+    url: http://localhost:8080/account-service
+    endpoint: /api/auth/validate

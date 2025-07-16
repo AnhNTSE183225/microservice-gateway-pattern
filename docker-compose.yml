@@ -1,0 +1,16 @@
+services:
+  pe-mssql:
+    container_name: pe-mssql
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=yourStrong!Password
+    ports:
+      - "1433:1433"
+    volumes:
+      - pe-mssql:/var/opt/mssql
+    restart: unless-stopped
+
+volumes:
+  pe-mssql:
+    name: pe-mssql
