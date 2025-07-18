@@ -39,13 +39,13 @@ public class GlobalExceptionHandler {
         return buildResponse(BAD_REQUEST, errors);
     }
 
-    @ExceptionHandler({AuthenticationException.class, BadCredentialsException.class})
-    public ResponseEntity<?> handleUnauthorizedException(Exception e) {
+    @ExceptionHandler({AuthenticationException.class, BadCredentialsException.class, UnauthorizedException.class})
+    public ResponseEntity<?> handleUnauthorizedException(RuntimeException e) {
         return buildResponse(UNAUTHORIZED, e.getMessage());
     }
 
     @ExceptionHandler({AccessDeniedException.class, DisabledException.class})
-    public ResponseEntity<?> handleForbiddenException(Exception e) {
+    public ResponseEntity<?> handleForbiddenException(RuntimeException e) {
         return buildResponse(FORBIDDEN, e.getMessage());
     }
 

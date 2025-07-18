@@ -27,9 +27,9 @@ public class BlindBoxServiceImpl implements BlindBoxService {
         }
         blindBoxRepository.deleteById(id);
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", token);
+        headers.set("Authorization", "Bearer " + token);
         ResponseEntity<?> sync = restTemplate.exchange(
-                "http://localhost:8080/api/blind-box-service/blind-boxes/" + id,
+                "http://localhost:8080/blind-box-service/api/blind-boxes/" + id,
                 HttpMethod.DELETE,
                 new HttpEntity<>(headers),
                 ResponseEntity.class
@@ -45,6 +45,9 @@ public class BlindBoxServiceImpl implements BlindBoxService {
         if (request.getId() == null) {
             request.setId(((int) blindBoxRepository.count()) + 1);
         }
+        if (blindBoxRepository.findById(request.getId()).isPresent()) {
+            throw new BadRequestException("Blind box already exists with id: " + request.getId());
+        }
         if (request.getStock() > 100) {
             throw new BadRequestException("Stock cannot exceed 100");
         }
@@ -59,14 +62,6 @@ public class BlindBoxServiceImpl implements BlindBoxService {
         }
         if (!request.getReleaseDate().equals(LocalDate.now())) {
             throw new BadRequestException("Release date must be today");
-        }
-        if (!restTemplate.exchange(
-                "http://localhost:8080/blind-box-service/blind-box-categories/" + request.getCategoryId(),
-                HttpMethod.GET,
-                null,
-                ResponseEntity.class
-        ).getStatusCode().is2xxSuccessful()) {
-            throw new BadRequestException("Category not found with id: " + request.getBrandId());
         }
         BlindBox blindBox = BlindBox.builder()
                 .id(request.getId())
@@ -87,18 +82,18 @@ public class BlindBoxServiceImpl implements BlindBoxService {
             request.setId(blindBox.getId());
         }
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        ResponseEntity<?> sync = restTemplate.exchange(
-                "http://localhost:8080/api/blind-box-service/blind-boxes",
-                HttpMethod.POST,
-                new HttpEntity<>(request, headers),
-                ResponseEntity.class
-        );
-        if (!sync.getStatusCode().is2xxSuccessful()) {
-            throw new BadRequestException("Failed to sync with brand service");
-        }
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.set("Authorization", "Bearer " + token);
+//        headers.setContentType(MediaType.APPLICATION_JSON);
+//        ResponseEntity<?> sync = restTemplate.exchange(
+//                "http://localhost:8080/blind-box-service/api/blind-boxes",
+//                HttpMethod.POST,
+//                new HttpEntity<>(request, headers),
+//                ResponseEntity.class
+//        );
+//        if (!sync.getStatusCode().is2xxSuccessful()) {
+//            throw new BadRequestException("Failed to sync with blind-box service" + sync.getStatusCode());
+//        }
         return blindBox.getId();
     }
 
@@ -124,14 +119,6 @@ public class BlindBoxServiceImpl implements BlindBoxService {
         if (!request.getReleaseDate().equals(LocalDate.now())) {
             throw new BadRequestException("Release date must be today");
         }
-        if (!restTemplate.exchange(
-                "http://localhost:8080/blind-box-service/blind-box-categories/" + request.getCategoryId(),
-                HttpMethod.GET,
-                null,
-                ResponseEntity.class
-        ).getStatusCode().is2xxSuccessful()) {
-            throw new BadRequestException("Category not found with id: " + request.getBrandId());
-        }
         blindBox.setId(request.getId());
         blindBox.setName(request.getName());
         blindBox.setCategoryId(request.getCategoryId());
@@ -150,16 +137,16 @@ public class BlindBoxServiceImpl implements BlindBoxService {
         }
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", token);
+        headers.set("Authorization", "Bearer " + token);
         headers.setContentType(MediaType.APPLICATION_JSON);
         ResponseEntity<?> sync = restTemplate.exchange(
-                "http://localhost:8080/api/blind-box-service/blind-boxes",
+                "http://localhost:8080/blind-box-service/api/blind-boxes",
                 HttpMethod.PUT,
                 new HttpEntity<>(request, headers),
                 ResponseEntity.class
         );
         if (!sync.getStatusCode().is2xxSuccessful()) {
-            throw new BadRequestException("Failed to sync with brand service");
+            throw new BadRequestException("Failed to sync with blind-box service" + sync.getStatusCode());
         }
     }
 }

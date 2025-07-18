@@ -19,9 +19,7 @@ public class AuthenticationController {
     ) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(
-                        authenticationService.login(request)
-                );
+                .body(authenticationService.login(request));
     }
 
     @PostMapping("/api/auth/register")

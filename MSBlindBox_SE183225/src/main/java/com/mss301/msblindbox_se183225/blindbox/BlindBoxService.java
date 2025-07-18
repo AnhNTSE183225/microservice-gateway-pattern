@@ -5,8 +5,6 @@ import java.util.List;
 public interface BlindBoxService {
     List<BlindBoxDTO> findAll();
 
-    BlindBoxDTO findById(Integer id);
-
     void delete(Integer id, String token);
 
     Integer create(BlindBoxCreateRequest request, String token);

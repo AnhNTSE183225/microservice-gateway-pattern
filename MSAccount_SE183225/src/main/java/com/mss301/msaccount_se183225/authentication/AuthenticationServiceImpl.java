@@ -47,7 +47,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (userRepository.findAuthentication(request.email()).isPresent()) {
             throw new BadRequestException("Email already exists");
         }
+        int nextInt = ((int) userRepository.count()) + 1;
         User user = User.builder()
+                .id(nextInt)
                 .username(request.username())
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))

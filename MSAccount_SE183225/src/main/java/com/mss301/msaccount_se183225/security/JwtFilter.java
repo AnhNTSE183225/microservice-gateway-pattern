@@ -1,11 +1,12 @@
 package com.mss301.msaccount_se183225.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mss301.msaccount_se183225.exception.UnauthorizedException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
@@ -17,6 +18,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 import java.util.List;
@@ -25,13 +27,27 @@ import java.util.Map;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Service
-@RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
-    private final AntPathMatcher pathMatcher;
+    private final AntPathMatcher antPathMatcher;
     private final ObjectMapper objectMapper;
+    private final HandlerExceptionResolver handlerExceptionResolver;
+
+    public JwtFilter(
+            JwtService jwtService,
+            UserDetailsService userDetailsService,
+            AntPathMatcher antPathMatcher,
+            ObjectMapper objectMapper,
+            @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver
+    ) {
+        this.jwtService = jwtService;
+        this.userDetailsService = userDetailsService;
+        this.antPathMatcher = antPathMatcher;
+        this.objectMapper = objectMapper;
+        this.handlerExceptionResolver = handlerExceptionResolver;
+    }
 
     private final List<String> PUBLIC_PATHS = List.of(
             "/v3/api-docs/**",
@@ -60,7 +76,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 return;
             }
             if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-                throw new RuntimeException("Missing required token");
+                throw new UnauthorizedException("Missing required token");
             }
             jwt = authorizationHeader.substring(7);
             username = jwtService.extractUsername(jwt);
@@ -77,15 +93,21 @@ public class JwtFilter extends OncePerRequestFilter {
                             new WebAuthenticationDetailsSource().buildDetails(request)
                     );
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    throw new UnauthorizedException("Invalid token");
                 }
+            } else {
+                throw new UnauthorizedException("Invalid token");
             }
         } catch (Exception e) {
-            buildResponse(response, "Unauthorized: " + e.getMessage());
+            // buildResponse(response, "Unauthorized: " + e.getMessage());
+            handlerExceptionResolver.resolveException(request, response, null, e);
             return;
         }
         filterChain.doFilter(request, response);
     }
 
+    @SuppressWarnings("unused")
     private void buildResponse(HttpServletResponse response, String message) throws IOException {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -112,6 +134,6 @@ public class JwtFilter extends OncePerRequestFilter {
             pathToMatch = requestURI;
         }
 
-        return PUBLIC_PATHS.stream().anyMatch(pattern -> pathMatcher.match(pattern, pathToMatch));
+        return PUBLIC_PATHS.stream().anyMatch(pattern -> antPathMatcher.match(pattern, pathToMatch));
     }
 }
