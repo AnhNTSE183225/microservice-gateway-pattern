@@ -1,10 +1,6 @@
 package com.mss301.msaccount_se183225.security;
 
 import com.mss301.msaccount_se183225.authentication.UserRepository;
-import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
-import io.swagger.v3.oas.models.security.SecurityScheme;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,22 +20,6 @@ import org.springframework.web.client.RestTemplate;
 public class BeansConfig {
 
     private final UserRepository userRepository;
-
-    @Bean
-    public OpenAPI openAPI() {
-        return new OpenAPI()
-                .addSecurityItem(new SecurityRequirement().addList("JWT"))
-                .components(
-                        new Components().addSecuritySchemes(
-                                "JWT",
-                                new SecurityScheme()
-                                        .name("Bearer")
-                                        .type(SecurityScheme.Type.HTTP)
-                                        .scheme("bearer")
-                                        .bearerFormat("JWT")
-                        )
-                );
-    }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {

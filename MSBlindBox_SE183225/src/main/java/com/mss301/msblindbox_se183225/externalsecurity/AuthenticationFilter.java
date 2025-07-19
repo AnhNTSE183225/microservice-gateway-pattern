@@ -1,14 +1,11 @@
 package com.mss301.msblindbox_se183225.externalsecurity;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Builder;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,26 +29,21 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     private final RestTemplate restTemplate;
     private final AntPathMatcher antPathMatcher;
     private final String authenticationUrl;
-    private final ObjectMapper objectMapper;
     private final HandlerExceptionResolver handlerExceptionResolver;
 
     public AuthenticationFilter(
             RestTemplate restTemplate,
             AntPathMatcher antPathMatcher,
             String authenticationUrl,
-            ObjectMapper objectMapper,
             @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver
     ) {
         this.restTemplate = restTemplate;
         this.antPathMatcher = antPathMatcher;
         this.authenticationUrl = authenticationUrl;
-        this.objectMapper = objectMapper;
         this.handlerExceptionResolver = handlerExceptionResolver;
     }
 
     private final List<String> PUBLIC_PATHS = List.of(
-            "/v3/api-docs/**",
-            "/swagger-ui/**",
             "/api/public/**"
     );
 
@@ -111,22 +103,6 @@ public class AuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         filterChain.doFilter(request, response);
-    }
-
-    @SuppressWarnings("unused")
-    private void buildResponse(HttpServletResponse response, String message) throws IOException {
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setCharacterEncoding("UTF-8");
-
-        Map<String, Object> apiResponse = Map.of(
-                "response", HttpStatus.UNAUTHORIZED.value(),
-                "error", message
-        );
-
-        String jsonResponse = objectMapper.writeValueAsString(apiResponse);
-        response.getWriter().write(jsonResponse);
-        response.getWriter().flush();
     }
 
     private boolean isPublicPath(HttpServletRequest request) {

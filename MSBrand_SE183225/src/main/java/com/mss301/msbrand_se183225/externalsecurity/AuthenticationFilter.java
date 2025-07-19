@@ -31,7 +31,6 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     private final RestTemplate restTemplate;
     private final AntPathMatcher antPathMatcher;
     private final String authenticationUrl;
-    private final ObjectMapper objectMapper;
     private final HandlerExceptionResolver handlerExceptionResolver;
 
     public AuthenticationFilter(
@@ -44,13 +43,10 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         this.restTemplate = restTemplate;
         this.antPathMatcher = antPathMatcher;
         this.authenticationUrl = authenticationUrl;
-        this.objectMapper = objectMapper;
         this.handlerExceptionResolver = handlerExceptionResolver;
     }
 
     private final List<String> PUBLIC_PATHS = List.of(
-            "/v3/api-docs/**",
-            "/swagger-ui/**",
             "/api/public/**"
     );
 
@@ -69,11 +65,6 @@ public class AuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
         try {
-            // SWAGGER redirection
-            if (request.getServletPath().equals("/")) {
-                response.sendRedirect(request.getContextPath() + "/swagger-ui/index.html");
-                return;
-            }
             // PUBLIC path checking
             final String authorizationHeader = request.getHeader(AUTHORIZATION);
             if (isPublicPath(request)) {
@@ -104,27 +95,10 @@ public class AuthenticationFilter extends OncePerRequestFilter {
             );
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         } catch (Exception e) {
-            // buildResponse(response, "Unauthorized: " + e.getMessage());
             handlerExceptionResolver.resolveException(request, response, null, e);
             return;
         }
         filterChain.doFilter(request, response);
-    }
-
-    @SuppressWarnings("unused")
-    private void buildResponse(HttpServletResponse response, String message) throws IOException {
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setCharacterEncoding("UTF-8");
-
-        Map<String, Object> apiResponse = Map.of(
-                "response", HttpStatus.UNAUTHORIZED.value(),
-                "error", message
-        );
-
-        String jsonResponse = objectMapper.writeValueAsString(apiResponse);
-        response.getWriter().write(jsonResponse);
-        response.getWriter().flush();
     }
 
     private boolean isPublicPath(HttpServletRequest request) {
